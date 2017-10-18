@@ -1,5 +1,5 @@
 %%[
-SET @sk = QUERYPARAMETER(_subscriberkey)
+SET @sk = QUERYPARAMETER('sk')
 
 /* Look up single customer view */
 SET @SCVLookUP = LookupRows("SCV","ContactID",@sk)
@@ -9,7 +9,7 @@ SET @RCSCVLookUp = RowCount(@SCVLookUP)
 SET @PrefLookUp = LookupRows("Preferences_SCV","ContactID",@sk)
 SET @RCPrefLookUp = RowCount(@PrefLookUp)
 
-IF @RCPrefLookUp > 0 AND @RCSCVLookUp > 0 THEN
+IF @RCPrefLookUp == 1 AND @RCSCVLookUp == 1 THEN
     /* Sets row to both preference and SCV */
     SET @row = Row(@PrefLookUp,1)
     SET @SCVrow = Row(@SCVLookUP,1)
@@ -38,7 +38,7 @@ IF @RCPrefLookUp > 0 AND @RCSCVLookUp > 0 THEN
     SET @VMedical_Professional = Field(@row, "Medical_Professional")
     SET @VAllied_Health_Care_Professional = Field(@row, "Allied_Health_Care_Professional")
 ELSE
-
+   Redirect(CloudPagesURL('351','message','notfound'))
 ENDIF
 ]%%
 
@@ -50,7 +50,7 @@ ENDIF
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
 <body>
-    <link rel="stylesheet" type="text/css" href="form.css">
+    <link rel="stylesheet" type="text/css" href="%%=CloudPagesURL(349)=%%">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <div class="container">
         <div class="well">
@@ -62,12 +62,12 @@ ENDIF
                     <div class="col-sm-12">
                         <div class="row">
                             <div class="col-sm-6 form-group">
-                                <label>Account ID%%=v(@RCSCVLookUp)=%%<br/>%%=v(@RCPrefLookUp)=%%</label>
-                                <input name="ContactID" type="text" value="%%=v(@sk)=%%" required placeholder="Enter Account ID Here.." class="form-control" required>
+                                <label>Account ID</label>
+                                <input name="ContactID" type="text" value="%%=v(@sk)=%%" required placeholder="Enter Account ID Here.." class="form-control" required readonly>
                             </div>
                             <div class="col-sm-6 form-group">
                                 <label>Email Address</label>
-                                <input name="email" type="email" value="%%=v(@Vemail)=%%" required placeholder="Enter Email Address Here.." class="form-control" required>
+                                <input name="email" type="email" value="%%=v(@Vemail)=%%" required placeholder="Enter Email Address Here.." class="form-control" required readonly>
                             </div>
                         </div>
                         <div class="row">
@@ -196,7 +196,7 @@ ENDIF
                                 </div>
                             </div>
                         </div>
-                        <button name="Submitted" type="Submit" value="submitted" class="btn btn-lg btn-info">Submit</button>
+                        <button name="Submitted" type="Submit" value="submitted" class="btn btn-lg btn-info text-center">Submit</button>
                     </div>
                     <!-- hidden fields -->
                     <input type="hidden" name="__contextName" id="__contextName" value="prefFormPost">
@@ -264,9 +264,9 @@ SET @UpdateData = UpsertData(
 "Submitted", @Submitted)
 
 IF @UpdateData == 1 AND @UpdateDataSCV == 1 THEN
-    Redirect("http://www.google.com")
+    Redirect(CloudPagesURL('351','message','success'))
 ELSE
-    Redirect("http://www.yahoo.com")
+    Redirect(CloudPagesURL('351','message','error'))
 ENDIF
 ]%%
 </body>
